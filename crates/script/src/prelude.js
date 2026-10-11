@@ -152,9 +152,9 @@ File.prototype = {
         this.__buf = "";
         return true;
       }
-      this.__buf = JSON.parse(__file("read", this.__path));
+      this.__buf = JSON.parse(__file(this.encoding === "BINARY" ? "readBinary" : "read", this.__path));
     } else if (mode === "a") {
-      this.__buf = this.exists ? JSON.parse(__file("read", this.__path)) : "";
+      this.__buf = this.exists ? JSON.parse(__file(this.encoding === "BINARY" ? "readBinary" : "read", this.__path)) : "";
       this.__pos = this.__buf.length;
     } else {
       // Check the gate now, like After Effects refusing to open a file for writing.
@@ -191,7 +191,7 @@ File.prototype = {
   tell: function () { return this.__pos; },
   close: function () {
     if ((this.__mode === "w" || this.__mode === "a" || this.__mode === "e") && this.__buf !== null) {
-      __file("write", this.__path, this.__buf);
+      __file(this.encoding === "BINARY" ? "writeBinary" : "write", this.__path, this.__buf);
     }
     this.__buf = null;
     this.__mode = null;
@@ -199,8 +199,8 @@ File.prototype = {
   },
   remove: function () { return JSON.parse(__file("remove", this.__path)); },
   copy: function (to) {
-    var data = JSON.parse(__file("read", this.__path));
-    __file("write", __str(to), data);
+    var data = JSON.parse(__file("readBinary", this.__path));
+    __file("writeBinary", __str(to), data);
     return true;
   },
   rename: function () { throw __err("File.rename is not supported"); },

@@ -329,6 +329,29 @@ fn layers_items_and_markers() {
 }
 
 #[test]
+fn binary_files_preserve_every_byte_and_copy_without_text_decoding() {
+    let dir = std::env::temp_dir().join(format!("ec-script-binary-{}", std::process::id()));
+    std::fs::create_dir_all(&dir).unwrap();
+    let original = dir.join("original.bin");
+    let output = dir.join("written.bin");
+    let copy = dir.join("copy.bin");
+    let bytes = [0x00, 0x7f, 0x80, 0x89, 0xff, 0x0a];
+    std::fs::write(&original, bytes).unwrap();
+    let mut s = session();
+    s.prefs.scripting.allow_scripts_write_files = true;
+    let quoted = |p: &std::path::Path| serde_json::to_string(&p.to_string_lossy()).unwrap();
+    let code = format!(
+        "var f = new File({}); f.encoding = 'BINARY'; f.open('r'); var bytes = f.read(); f.close();          var out = new File({}); out.encoding = 'BINARY'; out.open('w'); out.write(bytes); out.close();          f.copy({}); [bytes.length, bytes.charCodeAt(3), bytes.charCodeAt(4)]",
+        quoted(&original), quoted(&output), quoted(&copy)
+    );
+    let result = ok(&mut s, &code);
+    assert_eq!(result.result, json!([6, 0x89, 0xff]));
+    assert_eq!(std::fs::read(&output).unwrap(), bytes);
+    assert_eq!(std::fs::read(&copy).unwrap(), bytes);
+    let _ = std::fs::remove_dir_all(dir);
+}
+
+#[test]
 fn security_gate_for_files() {
     let dir = std::env::temp_dir().join(format!("ec-script-gate-{}", std::process::id()));
     let proj = dir.join("proj");
