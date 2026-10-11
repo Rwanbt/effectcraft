@@ -363,6 +363,21 @@ fn native_file(_: &JsValue, args: &[JsValue], ctx: &mut Context) -> JsResult<JsV
                 let bytes = s.services.read_file(&p.to_string_lossy()).map_err(|e| format!("Unable to read {path}: {e}"))?;
                 Ok(json!(String::from_utf8_lossy(&bytes)))
             }
+            "readBinary" => {
+                let p = check_access(s, &path, false)?;
+                let bytes = s.services.read_file(&p.to_string_lossy()).map_err(|e| format!("Unable to read {path}: {e}"))?;
+                // BINARY represents each byte as one U+0000..U+00FF code point.
+                Ok(json!(bytes.into_iter().map(char::from).collect::<String>()))
+            }
+            "writeBinary" => {
+                let p = check_access(s, &path, true)?;
+                let mut bytes = Vec::with_capacity(data.len());
+                for ch in data.chars() {
+                    bytes.push(u8::try_from(u32::from(ch)).map_err(|_| "BINARY data contains a character outside the byte range".to_string())?);
+                }
+                s.services.write_file(&p.to_string_lossy(), &bytes).map_err(|e| format!("Unable to write {path}: {e}"))?;
+                Ok(json!(bytes.len()))
+            }
             "write" | "append" => {
                 let p = check_access(s, &path, true)?;
                 let ps = p.to_string_lossy().to_string();
