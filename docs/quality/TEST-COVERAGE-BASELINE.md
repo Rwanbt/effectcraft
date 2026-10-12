@@ -16,3 +16,20 @@ The new `Rust quality and deterministic coverage` workflow collects an LCOV file
 ## Exclusions and limitations
 
 No coverage exclusions have been applied or claimed. Coverage of other crates, native UI automation, browser E2E, packaging, mutation testing, fuzzing, performance, GPU device-specific paths and multiplatform full-workspace builds is **UNVERIFIED** until independently executed. Rust's `cargo llvm-cov` reports lines/regions/functions; branch availability depends on instrumentation support. The baseline must not be reported as 100%.
+
+## First measured baseline (foundation only)
+
+At commit `ba572bca122164e86218de02793f97009a7157ef`, [GitHub Actions run 38268599638](https://github.com/Rwanbt/effectcraft/actions/runs/38268599638) completed the `effectcraft-time` foundation jobs on Linux, Windows and macOS. The Linux coverage job uploaded artifact `effectcraft-time-coverage` (id `11755318561`):
+
+| LLVM metric | Covered | Total | Measured percentage |
+|---|---:|---:|---:|
+| Lines | 412 | 489 | 84.25% |
+| Functions | 58 | 81 | 71.60% |
+| Regions | 970 | 1106 | 87.70% |
+| Branches | not instrumented | not instrumented | unavailable |
+
+This is **not** an entire-workspace baseline. The full `xtask ci` job on that SHA was still running when later commits were pushed; a canceled run does not count as success. Tests later than `ba572bca`, including the `TimeRange::overlaps` regression, need their own exact-SHA results.
+
+## Regression captured before the fix
+
+At `1955d2a9227a790cdf6b7f24e1ef92f234b5e493`, [GitHub Actions run 38269812511](https://github.com/Rwanbt/effectcraft/actions/runs/38269812511) showed `empty_and_reversed_ranges_never_overlap_a_nonempty_range` **FAILED** while the ordinary half-open overlap test passed. Root cause: `TimeRange::overlaps` did not check `is_empty()` for either operand. This branch adds a guard and preserves the failing case as a regression test; do not mark fixed until the post-fix SHA is green.

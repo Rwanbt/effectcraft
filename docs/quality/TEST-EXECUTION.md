@@ -25,3 +25,9 @@ New SMPTE drop-frame tests use published counting rules, fixed integer boundarie
 ## Current execution state
 
 As of the baseline commit, these new tests and the new workflow are **not yet executed**. Update this record with exact SHA, run URLs and measured values after GitHub Actions completes.
+
+## Recorded exact-SHA observations (2026-10-12)
+
+- `ba572bca122164e86218de02793f97009a7157ef`: GitHub Actions `38268599638` foundation job **success** on Linux, Windows and macOS; 19 unit + 2 SMPTE contract + 3 prior integration tests = **24 tests** per platform. Linux formatting check succeeded; coverage artifact `11755318561` uploaded and measured.
+- `1955d2a9227a790cdf6b7f24e1ef92f234b5e493`: GitHub Actions `38269812511` Linux foundation test **failed by design** on the newly added empty-range overlap regression, establishing red-before-green evidence.
+- Any later fix requires a fresh GitHub Actions success at that specific commit; canceled old runs and a previous SHA's coverage cannot validate it.

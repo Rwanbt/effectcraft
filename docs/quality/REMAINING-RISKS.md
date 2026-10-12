@@ -9,3 +9,7 @@
 7. **Dependent upstream Git revisions and native libraries** need reproducible setup; report failures as blockers, not passes.
 
 Status: **PARTIALLY VERIFIED** as an audit, **NOT PRODUCTION READY** as an entire application.
+
+## New regression finding: zero-duration timeline overlap
+
+The comparison `TimeRange::new(Tick(10), Tick(0)).overlaps(&TimeRange::from_bounds(Tick(0), Tick(20)))` unexpectedly yielded `true` before correction. A deterministic test **failed in CI** on SHA `1955d2a9227a790cdf6b7f24e1ef92f234b5e493` (run `38269812511`). The minimal fix checks both ranges for emptiness before comparing endpoints. **Post-fix validation remains required**; do not merge the draft PR until validated.
