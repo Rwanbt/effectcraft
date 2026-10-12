@@ -53,8 +53,5 @@ fn malformed_timecodes_report_actionable_displayable_errors() {
     let rate = FrameRate::FPS_24;
     assert_eq!(parse_timecode("", rate, false, 0).unwrap_err(), ParseError("empty timecode".into()));
     assert_eq!(parse_timecode("  ", rate, false, 0).unwrap_err().to_string(), "empty timecode");
-    assert_eq!(
-        parse_timecode("00:00:00:00:00", rate, false, 0).unwrap_err().to_string(),
-        "too many timecode fields"
-    );
+    assert_eq!(parse_timecode("00:00:00:00:00", rate, false, 0).unwrap_err().to_string(), "too many timecode fields");
 }
