@@ -131,8 +131,9 @@ impl TimeRange {
     pub fn contains(&self, t: Tick) -> bool {
         t >= self.start && t < self.end()
     }
+    /// Empty or reversed intervals contain no instants and never overlap another range.
     pub fn overlaps(&self, o: &TimeRange) -> bool {
-        self.start < o.end() && o.start < self.end()
+        !self.is_empty() && !o.is_empty() && self.start < o.end() && o.start < self.end()
     }
     pub fn intersect(&self, o: &TimeRange) -> Option<TimeRange> {
         let s = self.start.max(o.start);
