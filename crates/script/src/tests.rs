@@ -730,3 +730,57 @@ fn import_options_sequence_picks_one_still_or_the_run() {
     assert_eq!(kind_of(&s, "shot_[0001-0003].png"), FootageKind::Sequence);
     let _ = std::fs::remove_dir_all(&dir);
 }
+
+
+/// Upstream #817: File.encoding = "BINARY" must preserve every byte, including
+/// non-UTF-8 bytes, when reading, copying, and writing files. A lossy UTF-8
+/// conversion replaces 0x80/0x89/0xff with U+FFFD and corrupts binary assets.
+///
+/// This is an intentionally red regression test until the scripting file I/O
+/// implements a lossless BINARY transport. Keep the scripting write gate active.
+#[test]
+fn binary_file_encoding_roundtrips_invalid_utf8_bytes() {
+    let dir = std::env::temp_dir().join(format!("ec-script-binary-{}", std::process::id()));
+    std::fs::create_dir_all(&dir).unwrap();
+    let source = dir.join("source.bin");
+    let copied = dir.join("copied.bin");
+    let written = dir.join("written.bin");
+    let original = [0x00_u8, 0x7f, 0x80, 0x89, 0xff];
+    std::fs::write(&source, original).unwrap();
+
+    let mut s = session();
+    s.prefs.scripting.allow_scripts_write_files = true;
+    let q = |p: &std::path::Path| serde_json::to_string(&p.to_string_lossy()).unwrap();
+    let code = format!(
+        r#"
+        var source = new File({});
+        source.encoding = "BINARY";
+        if (!source.open("r")) throw new Error("source did not open");
+        var bytes = source.read();
+        source.close();
+        var written = new File({});
+        written.encoding = "BINARY";
+        if (!written.open("w")) throw new Error("destination did not open");
+        written.write(bytes);
+        written.close();
+        source.copy({});
+        Array.from(bytes, function (ch) {{ return ch.charCodeAt(0); }})
+        "#,
+        q(&source), q(&written), q(&copied)
+    );
+    let out = ok(&mut s, &code);
+    assert_eq!(out.result, json!([0, 127, 128, 137, 255]), "BINARY read must expose byte values without replacement");
+    assert_eq!(std::fs::read(&written).unwrap(), original, "BINARY write must preserve bytes");
+    assert_eq!(std::fs::read(&copied).unwrap(), original, "File.copy must preserve bytes");
+
+    // The fix must not accidentally bypass the existing write-permission gate.
+    s.prefs.scripting.allow_scripts_write_files = false;
+    let blocked = run_code(
+        &mut s,
+        &format!("var f = new File({}); f.encoding = 'BINARY'; f.open('w');", q(&dir.join("blocked.bin"))),
+        "binary-gate.jsx",
+    );
+    assert!(blocked.error.is_some(), "BINARY writes must remain protected");
+    assert!(!dir.join("blocked.bin").exists());
+    let _ = std::fs::remove_dir_all(&dir);
+}
