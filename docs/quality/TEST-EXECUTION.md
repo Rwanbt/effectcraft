@@ -44,3 +44,12 @@ cargo llvm-cov report --json --output-path coverage-project.json
 ```
 
 The PR Rust quality workflow now runs time and project suites on Linux, macOS and Windows and archives their independent reports. A successful run at the exact commit is mandatory before assigning any measured project coverage figure.
+
+## Essential Graphics and project builder regression suites
+
+```sh
+cargo test --locked -p effectcraft-project --test essential_graphics_contract
+cargo test --locked -p effectcraft-project --test build_defaults_contract
+```
+
+Both suites run through the project's existing three-OS foundation matrix and its Linux `cargo llvm-cov` project report. Mirror chains longer than eight hops now have an explicit expected target; cycles must return `None`, not loop.

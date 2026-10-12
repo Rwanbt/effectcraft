@@ -247,9 +247,11 @@ impl EssentialGraphics {
         })
     }
     /// The control a mirror shows (following mirrors of mirrors); the control itself otherwise.
+    /// Valid chains may be longer than eight controls; only missing targets and cycles fail.
     pub fn resolve(&self, id: u64) -> Option<&EgControl> {
         let mut c = self.find(id)?;
-        for _ in 0..8 {
+        let mut visited = std::collections::BTreeSet::new();
+        while visited.insert(c.id) {
             match c.kind {
                 EgKind::Mirror { of } => c = self.find(of)?,
                 _ => return Some(c),

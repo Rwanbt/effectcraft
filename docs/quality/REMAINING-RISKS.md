@@ -22,3 +22,9 @@ The comparison `TimeRange::new(Tick(10), Tick(0)).overlaps(&TimeRange::from_boun
 - `Project::comp_contains` previously recursed without tracking visited compositions, allowing a cyclic user project to exhaust the stack. The new iterative visited-set traversal terminates on cyclic graphs while preserving reachability.
 - `Project::fix_next_id` previously used unchecked integer increments. Saturating normalization plus a `from_json` rejection of exhausted id space prevents a crash or silent id reuse when opening malformed project files. `Project::alloc` still returns `u64` (no fallible API), so exhaustion from programmatically constructed projects remains outside the scope of this patch and is tracked for design review.
 - Integration contracts for cyclic graphs, stale ids, exhausted ids, invalid/future schemas and every prefix truncation are added, pending CI execution and measured `effectcraft-project` LLVM baseline.
+
+## Essential Graphics follow-up (pending SHA-specific CI)
+
+- `EssentialGraphics::resolve` previously stopped after 8 mirror hops even for valid acyclic chains. It now follows the chain until the first nonmirror, detecting repeat control IDs with a visited set and returning `None` for missing targets or cycles.
+- New project integration suites independently check mirror lookup, nested groups, control-type coercion, hidden controls, source/link mapping, match IDs, transform/mask/text selector builder defaults and unique UIDs. These do not replace end-to-end Essential Graphics / MOGRT render tests.
+- Track hostile nested `EgKind::Group` depth and the recursive `find_mut`/`remove` traversal separately; no unsubstantiated claim that all recursive nesting is safe.
