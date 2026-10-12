@@ -13,3 +13,6 @@ Status: **PARTIALLY VERIFIED** as an audit, **NOT PRODUCTION READY** as an entir
 ## New regression finding: zero-duration timeline overlap
 
 The comparison `TimeRange::new(Tick(10), Tick(0)).overlaps(&TimeRange::from_bounds(Tick(0), Tick(20)))` unexpectedly yielded `true` before correction. A deterministic test **failed in CI** on SHA `1955d2a9227a790cdf6b7f24e1ef92f234b5e493` (run `38269812511`). The minimal fix checks both ranges for emptiness before comparing endpoints. **Post-fix validation remains required**; do not merge the draft PR until validated.
+
+- `TimeRange::overlaps` is **green after correction** in GitHub Actions on all three OS at `7e8c4fdf2fa83d695205f1184dcf29439b9ed351`, retaining red-before-green evidence.
+- New Tick/SMPTE/parser tests must be checked at their own newer SHA before they count as verified coverage.

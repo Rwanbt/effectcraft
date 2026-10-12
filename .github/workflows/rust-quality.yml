@@ -3,7 +3,7 @@ name: Rust quality and deterministic coverage
 
 on:
   push:
-    branches: [main, "test/**", "fix/**"]
+    branches: [main]
   pull_request:
   workflow_dispatch:
 
@@ -55,6 +55,7 @@ jobs:
           if-no-files-found: warn
 
   workspace:
+    # Branch pushes use their draft PR check instead of duplicating expensive builds.
     name: Full workspace quality gate (Linux)
     runs-on: ubuntu-latest
     timeout-minutes: 90

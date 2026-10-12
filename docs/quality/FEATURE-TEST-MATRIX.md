@@ -4,7 +4,7 @@ State values: `VERIFIED` = contract assertions actually run at the referenced co
 
 | ID | Component | Expected contract | Risk | Required evidence | Current state |
 |---|---|---|---|---|---|
-| TIM-01 | `crates/time` | exact time, SMPTE/NDF/DF boundaries including 119.88; empty half-open ranges | drift, invalid overlaps, wrong frames | boundary/overlap contract tests + OS matrix + LLVM coverage | PARTIAL (24 foundation tests passed on three OS at `ba572bca`; overlap red at `1955d2a`, post-fix pending) |
+| TIM-01 | `crates/time` | exact time, SMPTE/NDF/DF boundaries including 119.88; empty half-open ranges | drift, invalid overlaps, wrong frames | boundary/overlap contract tests + OS matrix + LLVM coverage | PARTIAL (26 tests passed across three OS at `7e8c4fd`, overlap regression red at `1955d2a` and green at `7e8c4fd`; full-workspace pending) |
 | PROJ-01 | `crates/project` | versioned save/reload and migrations | data loss | unit + roundtrip + malformed inputs + E2E | UNVERIFIED |
 | ENG-01 | `crates/engine` | command dispatch, undo/redo, atomic failure | corruption | unit, integration and UI E2E | UNVERIFIED |
 | SCRIPT-01 | `crates/script` | isolated script I/O, BINARY bytes, permissions | corruption, sandbox escape | boundary tests and roundtrips | PARTIAL (other-branch CI failed) |

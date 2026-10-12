@@ -33,3 +33,15 @@ This is **not** an entire-workspace baseline. The full `xtask ci` job on that SH
 ## Regression captured before the fix
 
 At `1955d2a9227a790cdf6b7f24e1ef92f234b5e493`, [GitHub Actions run 38269812511](https://github.com/Rwanbt/effectcraft/actions/runs/38269812511) showed `empty_and_reversed_ranges_never_overlap_a_nonempty_range` **FAILED** while the ordinary half-open overlap test passed. Root cause: `TimeRange::overlaps` did not check `is_empty()` for either operand. This branch adds a guard and preserves the failing case as a regression test; do not mark fixed until the post-fix SHA is green.
+
+## After interval-regression fix
+
+At `7e8c4fdf2fa83d695205f1184dcf29439b9ed351`, [run 38270235028](https://github.com/Rwanbt/effectcraft/actions/runs/38270235028) reported the foundation suite **green** on Linux, Windows and macOS (19 unit + 2 SMPTE + 2 interval + 3 pre-existing integration = **26 tests on each platform**). LLVM artifact `11756094398` measures:
+
+| LLVM metric | Covered | Total | Measured percentage |
+|---|---:|---:|---:|
+| Lines | 442 | 489 | **90.39%** |
+| Functions | 68 | 81 | **83.95%** |
+| Regions | 1021 | 1108 | **92.15%** |
+
+Gains against `ba572bca`: +30 covered lines and +10 covered functions from testing TimeRange contracts; denominators differ slightly for regions after production-code changes. These figures are **module-level only**. This document's new display and Tick helper tests need the next CI/coverage run; do not count them in this measured baseline.
