@@ -34,3 +34,13 @@ As of the baseline commit, these new tests and the new workflow are **not yet ex
 
 - `7e8c4fdf2fa83d695205f1184dcf29439b9ed351`: GitHub Actions `38270235028` foundation suite passed on Linux/Windows/macOS, **26 tests per OS**; LLVM coverage `11756094398`: 90.39% lines, 83.95% functions, 92.15% regions in `effectcraft-time`. The full-workspace release gate was still running when recorded.
 - Branch `test/**` pushes no longer duplicate the long full-workspace gate; the required gate runs on every PR and main push, plus manual dispatch. This prevents cancellation/resource contention between identical push/PR workloads.
+
+## Project integrity suite
+
+```sh
+cargo test --locked -p effectcraft-project
+cargo llvm-cov --locked -p effectcraft-project --lcov --output-path coverage-project.lcov
+cargo llvm-cov report --json --output-path coverage-project.json
+```
+
+The PR Rust quality workflow now runs time and project suites on Linux, macOS and Windows and archives their independent reports. A successful run at the exact commit is mandatory before assigning any measured project coverage figure.

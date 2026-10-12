@@ -31,8 +31,8 @@ jobs:
           rustup toolchain install 1.95.0 --profile minimal --component rustfmt,clippy,llvm-tools-preview
           rustup default 1.95.0
           rustc --version
-      - name: Foundation timecode tests and edge-case regressions
-        run: cargo test --locked -p effectcraft-time
+      - name: Foundation and project-integrity regression suites
+        run: cargo test --locked -p effectcraft-time -p effectcraft-project
       - name: Format check
         if: matrix.os == 'ubuntu-latest'
         run: cargo fmt --all -- --check
@@ -44,15 +44,19 @@ jobs:
         run: |
           cargo llvm-cov --locked -p effectcraft-time --lcov --output-path coverage-time.lcov
           cargo llvm-cov report --json --output-path coverage-time.json
+          cargo llvm-cov --locked -p effectcraft-project --lcov --output-path coverage-project.lcov
+          cargo llvm-cov report --json --output-path coverage-project.json
       - name: Archive measured coverage
         if: matrix.os == 'ubuntu-latest' && always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
-          name: effectcraft-time-coverage
+          name: effectcraft-foundation-coverage
           path: |
             coverage-time.lcov
             coverage-time.json
-          if-no-files-found: warn
+            coverage-project.lcov
+            coverage-project.json
+          if-no-files-found: error
 
   workspace:
     # Branch pushes use their draft PR check instead of duplicating expensive builds.

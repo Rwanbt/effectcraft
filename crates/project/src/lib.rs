@@ -15,7 +15,7 @@ pub mod sequence;
 pub mod styles;
 pub mod tracking;
 
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, BTreeSet};
 use std::sync::Arc;
 
 pub use effectcraft_color::ColorSpace;
@@ -1272,20 +1272,34 @@ impl Project {
     }
     /// Whether comp `inner` is (transitively) nested inside comp `outer` (to prevent cycles).
     pub fn comp_contains(&self, outer: ItemId, inner: ItemId) -> bool {
-        if outer == inner {
-            return true;
+        // Files can contain cyclic or very deep precomp graphs. An explicit stack and visited
+        // set bound traversal to the number of compositions instead of overflowing the stack.
+        let mut pending = vec![outer];
+        let mut visited = BTreeSet::new();
+        while let Some(id) = pending.pop() {
+            if id == inner {
+                return true;
+            }
+            if !visited.insert(id) {
+                continue;
+            }
+            if let Some(comp) = self.comp(id) {
+                pending.extend(comp.layers.iter().filter_map(|layer| match &layer.source {
+                    LayerSource::Comp { item } => Some(*item),
+                    _ => None,
+                }));
+            }
         }
-        let Some(c) = self.comp(outer) else { return false };
-        c.layers.iter().any(|l| matches!(l.source, LayerSource::Comp { item } if self.comp_contains(item, inner)))
+        false
     }
     /// Make sure `next_id` exceeds every id in the project (after loading or merging).
     pub fn fix_next_id(&mut self) {
         let mut m = self.next_id;
         for (id, it) in &self.items {
-            m = m.max(id.0 + 1);
+            m = m.max(id.0.saturating_add(1));
             if let ItemKind::Comp(c) = &it.kind {
                 for l in &c.layers {
-                    m = m.max(l.id.0 + 1).max(l.props.max_uid() + 1);
+                    m = m.max(l.id.0.saturating_add(1)).max(l.props.max_uid().saturating_add(1));
                 }
             }
         }
@@ -1340,7 +1354,25 @@ impl Project {
         if p.schema > SCHEMA_VERSION {
             return Err(ProjectError::Invalid(format!("project schema {} is newer than this version supports ({SCHEMA_VERSION})", p.schema)));
         }
+        // The legacy allocator needs space for at least one increment. Reject exhausted ids
+        // before walking the project or allowing the next edit to overflow or reuse an id.
+        let exhausted = |id: u64| id >= u64::MAX - 1;
+        if exhausted(p.next_id)
+            || p.items.iter().any(|(key, item)| {
+                exhausted(key.0)
+                    || exhausted(item.id.0)
+                    || match &item.kind {
+                        ItemKind::Comp(comp) => comp.layers.iter().any(|layer| exhausted(layer.id.0) || exhausted(layer.props.max_uid())),
+                        _ => false,
+                    }
+            })
+        {
+            return Err(ProjectError::Invalid("project id space exhausted".into()));
+        }
         p.fix_next_id();
+        if exhausted(p.next_id) {
+            return Err(ProjectError::Invalid("project id space exhausted".into()));
+        }
         Ok(p)
     }
 }

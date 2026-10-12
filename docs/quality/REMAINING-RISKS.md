@@ -16,3 +16,9 @@ The comparison `TimeRange::new(Tick(10), Tick(0)).overlaps(&TimeRange::from_boun
 
 - `TimeRange::overlaps` is **green after correction** in GitHub Actions on all three OS at `7e8c4fdf2fa83d695205f1184dcf29439b9ed351`, retaining red-before-green evidence.
 - New Tick/SMPTE/parser tests must be checked at their own newer SHA before they count as verified coverage.
+
+## Project integrity follow-up (new code awaiting exact-SHA run)
+
+- `Project::comp_contains` previously recursed without tracking visited compositions, allowing a cyclic user project to exhaust the stack. The new iterative visited-set traversal terminates on cyclic graphs while preserving reachability.
+- `Project::fix_next_id` previously used unchecked integer increments. Saturating normalization plus a `from_json` rejection of exhausted id space prevents a crash or silent id reuse when opening malformed project files. `Project::alloc` still returns `u64` (no fallible API), so exhaustion from programmatically constructed projects remains outside the scope of this patch and is tracked for design review.
+- Integration contracts for cyclic graphs, stale ids, exhausted ids, invalid/future schemas and every prefix truncation are added, pending CI execution and measured `effectcraft-project` LLVM baseline.
