@@ -9,11 +9,7 @@ fn drop_frame_skips_correct_labels_at_the_first_minute() {
         let base = rate.timecode_base();
         let first_minute = base * 60;
         let width = if base >= 100 { 3 } else { 2 };
-        assert_eq!(
-            format_timecode_frames(first_minute - 1, rate, true),
-            format!("00;00;59;{:0width$}", base - 1),
-            "{rate}: last label before first minute"
-        );
+        assert_eq!(format_timecode_frames(first_minute - 1, rate, true), format!("00;00;59;{:0width$}", base - 1), "{rate}: last label before first minute");
         let first_label = format!("00;01;00;{dropped:0width$}");
         assert_eq!(format_timecode_frames(first_minute, rate, true), first_label, "{rate}: skipped labels at first minute");
         assert_eq!(parse_timecode(&first_label, rate, true, 0), Ok(first_minute), "{rate}: parse first-minute boundary");
