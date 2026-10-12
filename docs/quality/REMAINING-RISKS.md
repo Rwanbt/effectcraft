@@ -28,3 +28,7 @@ The comparison `TimeRange::new(Tick(10), Tick(0)).overlaps(&TimeRange::from_boun
 - `EssentialGraphics::resolve` previously stopped after 8 mirror hops even for valid acyclic chains. It now follows the chain until the first nonmirror, detecting repeat control IDs with a visited set and returning `None` for missing targets or cycles.
 - New project integration suites independently check mirror lookup, nested groups, control-type coercion, hidden controls, source/link mapping, match IDs, transform/mask/text selector builder defaults and unique UIDs. These do not replace end-to-end Essential Graphics / MOGRT render tests.
 - Track hostile nested `EgKind::Group` depth and the recursive `find_mut`/`remove` traversal separately; no unsubstantiated claim that all recursive nesting is safe.
+
+## Model-level Essential Graphics integration contracts (pending CI)
+
+Three new tests exercise `sync_project` across a nested composition, alias/master overrides, read-only `with_overrides`, transitive dependency enumeration, and `offset_ids` preserving template references. These are deterministic model tests; CLI+real-render E2E remains a separate gate.
