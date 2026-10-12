@@ -2,9 +2,9 @@
 //! Fixed expected orders and values prevent snapshot-to-snapshot false positives.
 
 use effectcraft_project::LayerId;
+use effectcraft_project::Value;
 use effectcraft_project::essential::{self, ControlType, EgControl, EgKind, EgLink, EssentialGraphics};
 use effectcraft_project::props::{ParamUi, Property};
-use effectcraft_project::Value;
 
 fn property_control(id: u64, layer: u64, prop: u64) -> EgControl {
     EgControl { id, name: format!("Control {id}"), kind: EgKind::Property { layer: LayerId(layer), prop, links: vec![] }, as_type: None }

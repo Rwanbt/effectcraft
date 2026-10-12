@@ -46,7 +46,7 @@ fn text_selector_builders_enforce_valid_kinds_and_defaults() {
     let mut next = 10;
     let mut ids = Ids(&mut next);
     assert!(build::text_selector(&mut ids, "invalid", "Unknown").is_none());
-    assert_eq!(next, 10, "unknown selector must not consume a UID");
+    assert_eq!(*ids.0, 10, "unknown selector must not consume a UID");
     let range = build::text_selector(&mut ids, "range", "Range Selector 1").unwrap();
     assert_eq!(range.match_id, "rangeSelector");
     assert_eq!(range.get("start").unwrap().value, Value::Scalar(0.0));
