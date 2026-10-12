@@ -12,12 +12,13 @@ fn drop_frame_skips_correct_labels_at_the_first_minute() {
     ] {
         let base = rate.timecode_base();
         let first_minute = base * 60;
+        let width = if base >= 100 { 3 } else { 2 };
         assert_eq!(
             format_timecode_frames(first_minute - 1, rate, true),
-            format!("00;00;59;{:02}", base - 1),
+            format!("00;00;59;{:0width$}", base - 1),
             "{rate}: last label before first minute"
         );
-        let first_label = format!("00;01;00;{dropped:02}");
+        let first_label = format!("00;01;00;{dropped:0width$}");
         assert_eq!(
             format_timecode_frames(first_minute, rate, true),
             first_label,
@@ -39,10 +40,11 @@ fn drop_frame_ten_minute_hour_and_negative_boundaries_round_trip() {
         (FrameRate::FPS_119_88, 8),
     ] {
         let base = rate.timecode_base();
+        let width = if base >= 100 { 3 } else { 2 };
         let ten_minutes = base * 600 - dropped * 9;
         let hour = base * 3600 - dropped * 54;
-        assert_eq!(format_timecode_frames(ten_minutes, rate, true), "00;10;00;00");
-        assert_eq!(format_timecode_frames(hour, rate, true), "01;00;00;00");
+        assert_eq!(format_timecode_frames(ten_minutes, rate, true), format!("00;10;00;{:0width$}", 0));
+        assert_eq!(format_timecode_frames(hour, rate, true), format!("01;00;00;{:0width$}", 0));
         for frame in [
             0,
             base * 60 - 1,
