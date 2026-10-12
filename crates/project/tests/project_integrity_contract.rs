@@ -65,8 +65,7 @@ fn malformed_and_truncated_project_files_return_errors() {
 
 #[test]
 fn exhausted_ids_fail_with_an_actionable_error_not_a_panic() {
-    let mut project = Project::default();
-    project.next_id = u64::MAX;
+    let project = Project { next_id: u64::MAX, ..Project::default() };
     let err = Project::from_json(&project.to_json()).unwrap_err();
     assert!(matches!(err, ProjectError::Invalid(message) if message.contains("id space exhausted")));
 
@@ -85,8 +84,7 @@ fn exhausted_ids_fail_with_an_actionable_error_not_a_panic() {
 
 #[test]
 fn unknown_schema_is_not_silently_downgraded() {
-    let mut project = Project::default();
-    project.schema = effectcraft_project::SCHEMA_VERSION + 1;
+    let project = Project { schema: effectcraft_project::SCHEMA_VERSION + 1, ..Project::default() };
     let err = Project::from_json(&project.to_json()).unwrap_err();
     assert!(matches!(err, ProjectError::Invalid(message) if message.contains("newer")));
 }
